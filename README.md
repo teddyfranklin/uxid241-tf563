@@ -2,4 +2,4 @@
 - This repo contains the project files for the uxid241 course, which is a project focused on using PHP and SQL for an online cookbook.
 
 ## AI use
-- any use of AI will be cited.
+- Assignment 2: Majority of code written by claude code on top of HTML input forms and other basic setup such as arrays. Comments are my own. I will rewrite this by hand to better my understanding of form validation. 
