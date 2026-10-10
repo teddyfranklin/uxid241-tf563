@@ -4,7 +4,7 @@
 
     // it is much easier to work with an array than with several variables
 
-    $foods = array("apple", "orange", "banana", "coconut");
+    $foods = ["apple", "orange", "banana", "coconut"];
 
     /*
     // this is the inefficient way to print an array

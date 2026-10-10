@@ -51,6 +51,7 @@ $bar = 'baz';
 # 4 Compound Types
     # array - list of items that can be multiple data types
     $companies = [1, 'A', true];
+    
     # object
     # callable
     # iterable
