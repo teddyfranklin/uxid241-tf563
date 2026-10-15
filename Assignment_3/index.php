@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-include $_SERVER['DOCUMENT_ROOT']."/assets/database/database.php";
+include $_SERVER['DOCUMENT_ROOT']."/assets/database/config.php";
 
 
 function printRowNumber(mysqli $connection): void {
@@ -8,6 +8,16 @@ function printRowNumber(mysqli $connection): void {
     $row = mysqli_fetch_assoc($result);
     echo "Rows: " . $row['total'];   // should print 40
 }
+
+function printRecipeTitles(mysqli $connection): void {
+    $result = mysqli_query($connection, "SELECT title FROM recipes_flat ORDER BY recipe_id");
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo htmlspecialchars($row['title']) . "<br />";
+    }
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -20,5 +30,7 @@ function printRowNumber(mysqli $connection): void {
 <body>
     <h1>Recipes list:</h1>
     <?php printRowNumber($connection); ?>
+    <br />
+    <?php printRecipeTitles($connection); ?>
 </body>
 </html>

@@ -16,9 +16,4 @@ if($connection){
     echo"you are not connected <br />";
 }
 
-/*
-$result = mysqli_query($connection, "SELECT COUNT(*) AS total FROM recipes_flat");
-$row = mysqli_fetch_assoc($result);
-echo "Rows: " . $row['total'];   // should print 40
-*/
 ?>
