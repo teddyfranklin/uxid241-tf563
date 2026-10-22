@@ -28,8 +28,8 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `categories` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL
+  `id` INT(11) NOT NULL,
+  `name` VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -48,13 +48,13 @@ INSERT INTO `categories` (`id`, `name`) VALUES
 
 --
 -- Table structure for table `recipes_flat`
---
+--  
 
 CREATE TABLE `recipes_flat` (
-  `recipe_id` int(2) DEFAULT NULL,
-  `slug` varchar(41) DEFAULT NULL,
+  `id` int AUTO_INCREMENT PRIMARY KEY,
+  `slug` text DEFAULT NOT NULL,
   `title` varchar(42) DEFAULT NULL,
-  `subtitle` varchar(47) DEFAULT NULL,
+  `subtitle` TEXT DEFAULT NOT NULL,
   `category_id` int(11) DEFAULT NULL,
   `servings` int(1) DEFAULT NULL,
   `description` varchar(416) DEFAULT NULL,

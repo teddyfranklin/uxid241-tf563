@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$connection = require ['DOCUMENT_ROOT']."/assets/database/config.php";
+$connection = require __DIR__ . "/../assets/database/config.php";
 
 
 // we're pulling and joining data from two separate tables

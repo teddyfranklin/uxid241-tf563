@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-include $_SERVER['DOCUMENT_ROOT']."/assets/database/config.php";
+require __DIR__ . "/../../assets/database/config.php";
 
 function printRecipeTitles(mysqli $connection): void {
     $result = mysqli_query($connection, "SELECT title FROM recipes_flat ORDER BY recipe_id");

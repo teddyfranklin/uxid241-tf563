@@ -5,11 +5,13 @@
 - It is a cookbook site connected to a database. The application allows users to search for recipes and filter searches using recipe metadata. It is built using PHP. 
 
 ## How to run locally
-- Create the SQL database
-- Fill credentials using config.php
-- Install mamp/xamp
-- Place project in htdocs folder, located in the same directory as mamp/xamp
-- Run using mamp/xamp
+- Install MAMP (Mac) or XAMPP (Windows)
+- Place project in the htdocs folder (`/Applications/MAMP/htdocs` or `C:\xampp\htdocs`)
+- Start Apache and MySQL, then create `recipe_db` in phpMyAdmin and import `assets/database/schema.sql`
+- Credentials are picked automatically in `assets/database/config.php`:
+  - XAMPP on Windows: `root`, no password, port 3306
+  - MAMP on Mac: `root` / `root`, port 8889
+- If your setup is different (e.g. MAMP on Windows, a custom port or password), copy `assets/database/config.local.example.php` to `config.local.php` and edit it. That file is gitignored.
 
 ## AI use
 - Assignment 2: Majority of code written by claude code on top of handwritten HTML input forms and other basic setup. Comments are my own. I will rewrite this by hand to better my understanding of form validation. 
