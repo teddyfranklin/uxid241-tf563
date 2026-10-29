@@ -24,9 +24,9 @@ if (file_exists(__DIR__ . "/config.local.php")) {
 
 $connection = mysqli_connect($db_server, $db_user, $db_password, $db_name, $db_port);
 
-if($connection){
-    echo"you are connected <br />";
-} else {
+// Only print a message when the connection fails. Printing "you are connected"
+// on success would also show up inside the search results that search.js loads.
+if(!$connection){
     echo"you are not connected <br />";
 }
 

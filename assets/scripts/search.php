@@ -1,0 +1,92 @@
+<?php
+declare(strict_types=1);
+
+/*
+ * search.php
+ * ----------
+ * Finds the recipes that match the search bar and the selected category,
+ * then prints the "X results" line and one card per recipe.
+ *
+ * This file is used in two ways:
+ *   1. Alpha/index.php includes it, so the cards are there when the page first loads.
+ *   2. search.js fetches it in the background every time the user types or picks a
+ *      category, then swaps the old cards for the new ones (the "real time" update).
+ *
+ * Either way it reads the same two values from the URL:
+ *   ?q=chicken      -> text typed into the search bar (matched against the title)
+ *   &category=2     -> id of the selected category (0 or missing means "All")
+ */
+
+// require_once so the database connection is only made once, even if index.php
+// already loaded config.php before including this file.
+require_once __DIR__ . "/../database/config.php";
+
+// Gets the recipes whose title contains $search and (optionally) that are in $categoryId.
+// Uses a prepared statement: the "?" placeholders are filled in by MySQL itself,
+// so whatever the user types is always treated as plain text and never as SQL.
+function searchRecipes(mysqli $connection, string $search, int $categoryId): array {
+    $sql = "SELECT t.title, c.name AS category, i.description, i.main_image
+            FROM recipes r
+            JOIN recipe_titles t ON t.recipe_id = r.id
+            JOIN recipe_info i ON i.recipe_id = r.id
+            JOIN categories c ON c.id = i.category_id
+            WHERE t.title LIKE ?
+              AND (? = 0 OR i.category_id = ?)
+            ORDER BY t.title";
+
+    // Wrap the search text in % so LIKE matches it anywhere in the title.
+    // An empty search becomes '%%', which matches every title.
+    $like = "%" . $search . "%";
+
+    // 1. Prepare: send the SQL with the ? placeholders to MySQL.
+    $statement = mysqli_prepare($connection, $sql);
+
+    // 2. Bind: fill the placeholders in order. "sii" = string, integer, integer.
+    //    The category id is used twice: "0 means all" check, then the real filter.
+    mysqli_stmt_bind_param($statement, "sii", $like, $categoryId, $categoryId);
+
+    // 3. Execute and collect every matching row as an associative array.
+    mysqli_stmt_execute($statement);
+    $result = mysqli_stmt_get_result($statement);
+    $recipes = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    mysqli_stmt_close($statement);
+    return $recipes;
+}
+
+// Read the search values from the URL. trim() removes stray spaces,
+// and (int) turns anything that isn't a number into 0 ("All").
+$search = trim($_GET['q'] ?? '');
+$categoryId = (int) ($_GET['category'] ?? 0);
+
+$recipes = searchRecipes($connection, $search, $categoryId);
+$count = count($recipes);
+?>
+<!-- "X results" line. "result" becomes "results" for anything other than 1. -->
+<p class="result-count"><?= $count ?> <?= $count === 1 ? 'result' : 'results' ?></p>
+
+<div class="card-grid">
+    <?php foreach ($recipes as $recipe): ?>
+        <article class="card">
+            <!-- Dark box with the "Image" label. The photo sits on top of it.
+                 Image paths in the database look like "images/<recipe>/dish.jpg",
+                 so "../assets/" + that path points at assets/images/<recipe>/dish.jpg.
+                 If the file is missing, onerror removes the broken photo and the
+                 dark "Image" placeholder shows instead. -->
+            <div class="card-image">
+                <span>Image</span>
+                <?php if (!empty($recipe['main_image'])): ?>
+                    <img src="../assets/<?= htmlspecialchars($recipe['main_image']) ?>"
+                         alt="<?= htmlspecialchars($recipe['title']) ?>"
+                         onerror="this.remove()">
+                <?php endif; ?>
+            </div>
+
+            <div class="card-text">
+                <p class="card-category"><?= htmlspecialchars($recipe['category']) ?></p>
+                <h2 class="card-name"><?= htmlspecialchars($recipe['title']) ?></h2>
+                <p class="card-description"><?= htmlspecialchars($recipe['description']) ?></p>
+            </div>
+        </article>
+    <?php endforeach; ?>
+</div>

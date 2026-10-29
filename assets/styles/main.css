@@ -1,0 +1,246 @@
+/*
+ * main.css
+ * --------
+ * Styles for the Alpha recipe search page (Figma: "Cookbook Class" > Wireframe).
+ * Sizes are taken straight from the wireframe, which is 1280px wide.
+ */
+
+/* ---------- Page basics ---------- */
+
+/* Make width/height include padding and borders, so sizes match Figma exactly. */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 34px 22px 40px 9px;   /* top right bottom left */
+    background: #e3e3e3;           /* light grey page background */
+    color: #000;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+/* Remove the browser's default spacing on text so we control it all here. */
+h1, h2, p {
+    margin: 0;
+    font-weight: 400;
+}
+
+/* "Recipe site alpha" */
+.site-title {
+    margin-left: 13px;   /* lines up with the 22px left edge in Figma */
+    font-size: 32px;
+}
+
+/* ---------- Layout: sidebar on the left, results on the right ---------- */
+
+.layout {
+    display: grid;
+    grid-template-columns: 202px 1fr;   /* sidebar is 202px wide */
+    column-gap: 45px;                   /* puts the results at 256px from the left */
+    margin-top: 64px;
+}
+
+/* ---------- Search bar ---------- */
+
+/* Spans both columns but starts in the second, above the cards. */
+.search-bar {
+    grid-column: 2;
+    width: 330px;
+    height: 40px;
+    padding: 0 7px;
+    border: 1px solid #000;
+    background: transparent;
+    font: inherit;
+    font-size: 20px;
+}
+
+/* The grey "Title Search" hint text. */
+.search-bar::placeholder {
+    color: #000;
+}
+
+/* ---------- Category sidebar ---------- */
+
+.sidebar {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    margin: 56px 0 0;   /* lines the "Category" box up with the top of the cards */
+    padding: 0;
+    border: 0;          /* remove the browser's default fieldset box */
+}
+
+/* The "Category" box at the top of the sidebar. */
+.sidebar-heading {
+    width: 100%;
+    height: 40px;
+    margin: 0 0 8px;
+    padding: 9px 16px;
+    border: 1px solid #000;
+    font-size: 16px;
+}
+
+/* One row per category: name on the left, button on the right. */
+.category-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 17px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Radio buttons drawn as the small squares from the wireframe.
+   appearance: none hides the browser's round radio so we can draw our own. */
+.category-option input {
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    margin: 0;
+    border: 1px solid #000;
+    cursor: pointer;
+}
+
+/* The selected category gets a filled black square. */
+.category-option input:checked {
+    background: #000;
+}
+
+/* Show a focus ring when using the keyboard. */
+.category-option input:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+/* ---------- Results ---------- */
+
+.results {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 46px;
+}
+
+/* "X results" */
+.result-count {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+/* Two columns of 476px cards with a 20px gap, like the wireframe.
+   auto-fill drops to one column when the window is too narrow for two. */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 476px);
+    gap: 20px;
+}
+
+/* ---------- Recipe card ---------- */
+
+/* Every card is exactly the same size. overflow: hidden stops long text
+   from ever making a card taller. */
+.card {
+    display: flex;
+    width: 476px;
+    height: 208px;
+    border: 1px solid #000;
+    overflow: hidden;
+}
+
+/* Left side: dark box with the word "Image" in the middle. */
+.card-image {
+    position: relative;
+    flex: 0 0 201px;   /* 202px in Figma, minus the 1px card border it overlaps */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #323232;
+    color: #fff;
+    font-size: 12px;
+}
+
+/* The real photo covers the placeholder once the images folder is added.
+   object-fit: cover fills the box and crops instead of stretching. */
+.card-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Right side: category, name and description. */
+.card-text {
+    flex: 1;
+    min-width: 0;   /* lets long words shrink instead of pushing the card wider */
+    padding: 12px 18px;
+}
+
+.card-category {
+    font-size: 16px;
+}
+
+.card-name {
+    margin-top: 6px;
+    font-size: 20px;
+    line-height: 1.2;
+    /* Cut long names off after 2 lines with "..." */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+.card-description {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    /* Cut long descriptions off after 6 lines with "..." so the text box
+       never grows to fit them. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    overflow: hidden;
+}
+
+/* ---------- Small screens ---------- */
+
+/* Below 760px: stack the sidebar above the results and let cards shrink. */
+@media (max-width: 760px) {
+    body {
+        padding: 24px 16px;
+    }
+
+    .site-title {
+        margin-left: 0;
+    }
+
+    .layout {
+        display: block;
+        margin-top: 24px;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .sidebar,
+    .results {
+        margin-top: 24px;
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        width: 100%;
+    }
+
+    .card-image {
+        flex-basis: 40%;
+    }
+}
