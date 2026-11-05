@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 // Copy this file to config.local.php and change only the values that differ on your machine.
 // config.local.php is gitignored, so each computer can have its own.
 

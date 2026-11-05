@@ -236,6 +236,18 @@ CREATE TABLE `steps` (
 
 -- --------------------------------------------------------
 
+-- Table structure for users
+-- email is UNIQUE so two accounts can't share it; password_hash holds a
+-- password_hash() result, never plaintext (VARCHAR(255) so it never truncates).
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Dumping data for table `categories`
 --

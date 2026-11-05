@@ -244,3 +244,49 @@ h1, h2, p {
         flex-basis: 40%;
     }
 }
+
+/* ---------- Login, register and admin pages ---------- */
+
+.site-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Log in / Register links under the title (Signed in as + Log out on admin). */
+.auth-links {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0 24px 13px;
+}
+
+.auth-links a {
+    color: #000;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 320px;
+    margin: 24px 0 0 13px;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.auth-form input,
+.auth-form button {
+    padding: 8px;
+    font: inherit;
+}
+
+.auth-error {
+    color: #b00020;
+}
+
+.admin-heading {
+    margin-left: 13px;
+}

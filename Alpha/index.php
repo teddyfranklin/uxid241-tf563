@@ -17,6 +17,8 @@ $categories = getCategories($connection);
 $searchText = trim($_GET['q'] ?? '');
 $selectedCategory = (int) ($_GET['category'] ?? 0);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,15 +26,19 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipe site alpha</title>
 
-    <!-- Inter, the font used in the Figma file -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="../assets/styles/main.css">
 </head>
 <body>
     <h1 class="site-title">Recipe site alpha</h1>
+
+    <!-- Login and Register (relative paths, no leading slash) -->
+    <nav class="auth-links">
+        <a class="login-button" href="login.php">Log in</a>
+        <a class="register-button" href="register.php">Register</a>
+    </nav>
 
     <!--
         One form holds the search bar AND the category buttons, so both are
