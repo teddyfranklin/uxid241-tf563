@@ -1,5 +1,6 @@
 <?php
-// guard.php - the lecture calls this require_login.php.
+
+// generated with claude based on snippets
 // Require it at the very top of every page in Alpha/admin/:
 //   require __DIR__ . '/../guard.php';
 declare(strict_types=1);
