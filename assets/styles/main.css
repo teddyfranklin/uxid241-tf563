@@ -263,6 +263,11 @@ h1, h2, p {
     color: #000;
 }
 
+/* "Welcome back" / "You are not logged in" line at the top of Alpha/index.php. */
+.auth-status {
+    margin: 12px 0 0 13px;
+}
+
 .auth-form {
     display: flex;
     flex-direction: column;

@@ -1,9 +1,25 @@
 <?php
 declare(strict_types=1);
 
+// Start the session (same hardened cookie as login.php) so we can tell
+// whether someone is logged in. Must run before any HTML is printed.
+require __DIR__ . '/session.php';
+
 // Connect to the database. require_once means search.php (included further down)
 // won't connect a second time.
 require_once __DIR__ . "/../assets/database/config.php";
+
+// Lecture: "Reading the current user" - the session only holds the id,
+// so look up the email to show in the welcome message.
+$currentUser = null;
+if (isset($_SESSION['user_id'])) {
+    $result = mysqli_execute_query(
+        $connection,
+        'SELECT email FROM users WHERE id = ?',
+        [$_SESSION['user_id']]
+    );
+    $currentUser = mysqli_fetch_assoc($result);
+}
 
 // Gets every category so we can print one radio button per category.
 function getCategories(mysqli $connection): array {
@@ -32,12 +48,25 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
     <link rel="stylesheet" href="../assets/styles/main.css">
 </head>
 <body>
+    <!-- Status text: changes depending on whether the user is logged in. -->
+    <?php if ($currentUser !== null): ?>
+        <p class="auth-status">Welcome back, <?= htmlspecialchars($currentUser['email']) ?>! You are logged in.</p>
+    <?php else: ?>
+        <p class="auth-status">You are not logged in. Log in or register to manage recipes.</p>
+    <?php endif; ?>
+
     <h1 class="site-title">Recipe site alpha</h1>
 
-    <!-- Login and Register (relative paths, no leading slash) -->
+    <!-- Links also change: Admin + Log out when logged in, otherwise Log in + Register
+         (relative paths, no leading slash). -->
     <nav class="auth-links">
-        <a class="login-button" href="login.php">Log in</a>
-        <a class="register-button" href="register.php">Register</a>
+        <?php if ($currentUser !== null): ?>
+            <a href="admin/index.php">Admin</a>
+            <a href="logout.php">Log out</a>
+        <?php else: ?>
+            <a class="login-button" href="login.php">Log in</a>
+            <a class="register-button" href="register.php">Register</a>
+        <?php endif; ?>
     </nav>
 
     <!--

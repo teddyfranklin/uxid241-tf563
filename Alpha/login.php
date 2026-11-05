@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   );
   $user = mysqli_fetch_assoc($result);
 
-  // Lecture: verify the password, then "Prevent session fixation"
+  // Verify the password, then "Prevent session fixation"
   // password_verify() re-hashes $plain with the salt stored in the hash and
   // compares in constant time. session_regenerate_id(true) swaps to a new
   // session id and deletes the old one, so a planted id becomes worthless.
