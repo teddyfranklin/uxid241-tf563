@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// logout.php - ends the admin session and goes back to the recipe list.
+// AI: generated with Claude based on the week 6 lecture snippets (carried over from Alpha).
 require __DIR__ . '/session.php';
 
 // Lecture: "Logging out: destroy the session"
