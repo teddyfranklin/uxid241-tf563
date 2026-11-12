@@ -21,10 +21,10 @@ declare(strict_types=1);
 // already loaded config.php before including this file.
 require_once __DIR__ . "/../database/config.php";
 
-// Gets the recipes whose title contains $search and (optionally) that are in $categoryId.
+// Gets the recipes whose title contains $search and (optionally) that are in $category_id.
 // Uses a prepared statement: the "?" placeholders are filled in by MySQL itself,
 // so whatever the user types is always treated as plain text and never as SQL.
-function searchRecipes(mysqli $connection, string $search, int $categoryId): array {
+function search_recipes(mysqli $connection, string $search, int $category_id): array {
     $sql = "SELECT t.title, c.name AS category, i.description, i.main_image
             FROM recipes r
             JOIN recipe_titles t ON t.recipe_id = r.id
@@ -43,7 +43,7 @@ function searchRecipes(mysqli $connection, string $search, int $categoryId): arr
 
     // 2. Bind: fill the placeholders in order. "sii" = string, integer, integer.
     //    The category id is used twice: "0 means all" check, then the real filter.
-    mysqli_stmt_bind_param($statement, "sii", $like, $categoryId, $categoryId);
+    mysqli_stmt_bind_param($statement, "sii", $like, $category_id, $category_id);
 
     // 3. Execute and collect every matching row as an associative array.
     mysqli_stmt_execute($statement);
@@ -57,9 +57,9 @@ function searchRecipes(mysqli $connection, string $search, int $categoryId): arr
 // Read the search values from the URL. trim() removes stray spaces,
 // and (int) turns anything that isn't a number into 0 ("All").
 $search = trim($_GET['q'] ?? '');
-$categoryId = (int) ($_GET['category'] ?? 0);
+$category_id = (int) ($_GET['category'] ?? 0);
 
-$recipes = searchRecipes($connection, $search, $categoryId);
+$recipes = search_recipes($connection, $search, $category_id);
 $count = count($recipes);
 ?>
 <!-- "X results" line. "result" becomes "results" for anything other than 1. -->

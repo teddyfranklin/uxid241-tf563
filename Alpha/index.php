@@ -11,27 +11,27 @@ require_once __DIR__ . "/../assets/database/config.php";
 
 // Lecture: "Reading the current user" - the session only holds the id,
 // so look up the email to show in the welcome message.
-$currentUser = null;
+$current_user = null;
 if (isset($_SESSION['user_id'])) {
     $result = mysqli_execute_query(
         $connection,
         'SELECT email FROM users WHERE id = ?',
         [$_SESSION['user_id']]
     );
-    $currentUser = mysqli_fetch_assoc($result);
+    $current_user = mysqli_fetch_assoc($result);
 }
 
 // Gets every category so we can print one radio button per category.
-function getCategories(mysqli $connection): array {
+function get_categories(mysqli $connection): array {
     $result = mysqli_query($connection, "SELECT id, name FROM categories ORDER BY name");
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-$categories = getCategories($connection);
+$categories = get_categories($connection);
 
 // Remember what the user typed/picked so the form still shows it after a page refresh.
-$searchText = trim($_GET['q'] ?? '');
-$selectedCategory = (int) ($_GET['category'] ?? 0);
+$search_text = trim($_GET['q'] ?? '');
+$selected_category = (int) ($_GET['category'] ?? 0);
 ?>
 
 
@@ -49,8 +49,8 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
 </head>
 <body>
     <!-- Status text: changes depending on whether the user is logged in. -->
-    <?php if ($currentUser !== null): ?>
-        <p class="auth-status">Welcome back, <?= htmlspecialchars($currentUser['email']) ?>! You are logged in.</p>
+    <?php if ($current_user !== null): ?>
+        <p class="auth-status">Welcome back, <?= htmlspecialchars($current_user['email']) ?>! You are logged in.</p>
     <?php else: ?>
         <p class="auth-status">You are not logged in. Log in or register to manage recipes.</p>
     <?php endif; ?>
@@ -60,7 +60,7 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
     <!-- Links also change: Admin + Log out when logged in, otherwise Log in + Register
          (relative paths, no leading slash). -->
     <nav class="auth-links">
-        <?php if ($currentUser !== null): ?>
+        <?php if ($current_user !== null): ?>
             <a href="admin/index.php">Admin</a>
             <a href="logout.php">Log out</a>
         <?php else: ?>
@@ -80,7 +80,7 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
         <!-- Search bar -->
         <input class="search-bar" type="search" name="q" placeholder="Title Search"
                aria-label="Search recipes by title"
-               value="<?= htmlspecialchars($searchText) ?>">
+               value="<?= htmlspecialchars($search_text) ?>">
 
         <!-- Category sidebar.
              Radio buttons (not checkboxes): in the database each recipe has only
@@ -92,14 +92,14 @@ $selectedCategory = (int) ($_GET['category'] ?? 0);
             <!-- "All" has the value 0, which search.php treats as "no filter". -->
             <label class="category-option">
                 All
-                <input type="radio" name="category" value="0" <?= $selectedCategory === 0 ? 'checked' : '' ?>>
+                <input type="radio" name="category" value="0" <?= $selected_category === 0 ? 'checked' : '' ?>>
             </label>
 
             <?php foreach ($categories as $category): ?>
                 <label class="category-option">
                     <?= htmlspecialchars($category['name']) ?>
                     <input type="radio" name="category" value="<?= (int) $category['id'] ?>"
-                        <?= $selectedCategory === (int) $category['id'] ? 'checked' : '' ?>>
+                        <?= $selected_category === (int) $category['id'] ? 'checked' : '' ?>>
                 </label>
             <?php endforeach; ?>
         </fieldset>
