@@ -15,8 +15,8 @@ $categories = get_categories($conn);
 
 // Remember what the user typed/picked so the form still shows it after a refresh.
 // The same values are read by search.php for the live updates.
-$search_text = trim((string) ($_GET['q'] ?? ''));
-$selected_category = (int) ($_GET['category'] ?? 0);
+$search_text = trim(input_string($_GET, 'q'));
+$selected_category = (int) input_string($_GET, 'category'); // missing or non-numeric becomes 0 ("All")
 
 $recipes = search_recipes($conn, $search_text, $selected_category);
 

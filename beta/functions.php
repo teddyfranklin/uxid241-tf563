@@ -1,5 +1,12 @@
 <?php
 declare(strict_types=1);
+
+// AI: generated with Claude Code. Include-only file: opening it directly in the browser gets a 404 instead of
+// running half a page (and printing PHP errors that reveal server paths).
+if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+  http_response_code(404);
+  exit;
+}
 // functions.php - every database query the beta pages use, in one place.
 // AI: generated with Claude Code (entire file), following the week 4 CRUD and
 // week 6/7 lecture patterns.
@@ -7,6 +14,17 @@ declare(strict_types=1);
 // Every query goes through mysqli_execute_query(). That one call does the three
 // prepared-statement steps from the lecture: prepare the SQL with ? placeholders,
 // bind the values in the array, and execute. User values never touch the SQL text.
+
+// ---------- Reading form / URL input ----------
+
+// Returns $source[$key] as a string, or '' if it's missing or not a string.
+// A visitor can send ?q[]=x, which makes $_GET['q'] an ARRAY; with strict_types,
+// passing that to trim() etc. would crash the page. This treats it as empty instead.
+// Use it as input_string($_GET, 'q') or input_string($_POST, 'email').
+function input_string(array $source, string $key): string {
+  $value = $source[$key] ?? '';
+  return is_string($value) ? $value : '';
+}
 
 // ---------- Users ----------
 
@@ -114,12 +132,12 @@ function validate_recipe(array $input, array $categories): array {
   $errors = [];
 
   $recipe = [
-    'title' => trim((string) ($input['title'] ?? '')),
-    'subtitle' => trim((string) ($input['subtitle'] ?? '')),
-    'category_id' => (string) ($input['category_id'] ?? ''),
-    'servings' => trim((string) ($input['servings'] ?? '')),
-    'description' => trim((string) ($input['description'] ?? '')),
-    'main_image' => trim((string) ($input['main_image'] ?? '')),
+    'title' => trim(input_string($input, 'title')),
+    'subtitle' => trim(input_string($input, 'subtitle')),
+    'category_id' => input_string($input, 'category_id'),
+    'servings' => trim(input_string($input, 'servings')),
+    'description' => trim(input_string($input, 'description')),
+    'main_image' => trim(input_string($input, 'main_image')),
     'ingredients' => [],
   ];
 
@@ -172,7 +190,7 @@ function validate_recipe(array $input, array $categories): array {
   }
 
   // Ingredients: one per line. Blank lines are skipped. At least one is required.
-  $lines = preg_split('/\R/', (string) ($input['ingredients'] ?? ''));
+  $lines = preg_split('/\R/', input_string($input, 'ingredients'));
   foreach ($lines as $line) {
     $line = trim($line);
     if ($line !== '') {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 // moved onto the shared header/footer for beta).
 
 require __DIR__ . '/session.php';
+require __DIR__ . '/functions.php';
 
 // Already logged in? Go straight to the admin area.
 if (isset($_SESSION['user_id'])) {
@@ -22,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Lecture: "Login: look up by email, then verify"
   // Prepared statement (mysqli_execute_query prepares, binds and executes in one call),
   // and the password is never part of the WHERE clause.
-  $email = trim($_POST['email'] ?? '');
-  $plain = $_POST['password'] ?? '';
+  $email = trim(input_string($_POST, 'email'));
+  $plain = input_string($_POST, 'password');
 
   $result = mysqli_execute_query(
     $conn,

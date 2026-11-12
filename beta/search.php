@@ -11,8 +11,8 @@ declare(strict_types=1);
 require __DIR__ . '/functions.php';
 $conn = require __DIR__ . '/../assets/database/config.php';
 
-$search_text = trim((string) ($_GET['q'] ?? ''));
-$selected_category = (int) ($_GET['category'] ?? 0); // anything non-numeric becomes 0 ("All")
+$search_text = trim(input_string($_GET, 'q'));
+$selected_category = (int) input_string($_GET, 'category'); // missing or non-numeric becomes 0 ("All")
 
 $recipes = search_recipes($conn, $search_text, $selected_category);
 

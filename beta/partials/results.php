@@ -1,5 +1,12 @@
 <?php
 declare(strict_types=1);
+
+// AI: generated with Claude Code. Include-only file: opening it directly in the browser gets a 404 instead of
+// running half a page (and printing PHP errors that reveal server paths).
+if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
+  http_response_code(404);
+  exit;
+}
 // results.php - the "X results" line and one card per recipe.
 // AI: generated with Claude Code, adapted from the Alpha search.php card markup.
 //

@@ -22,7 +22,7 @@ $messages = [
   'deleted' => 'Recipe deleted.',
   'not_found' => 'That recipe no longer exists.',
 ];
-$status = (string) ($_GET['status'] ?? '');
+$status = input_string($_GET, 'status');
 $message = $messages[$status] ?? '';
 
 $page_title = 'Admin';
