@@ -24,6 +24,7 @@
 - Email: `admin@example.com`
 - Password: `cookbook-admin-2026`
 - This is a local test account. The database only stores its `password_hash()` (bcrypt) hash, in `beta/database/beta.sql`. Re-importing `beta.sql` resets the password to the one above.
+- To change the admin password: run `php beta/database/hash_password.php` in a terminal (XAMPP: `C:\xampp\php\php.exe beta\database\hash_password.php`), type the new password, paste the printed hash into `beta.sql`, and re-import it. The script only runs from the command line; through the browser it returns 404.
 - Log in from the "Admin log in" link on any page, or go to `beta/login.php`.
 
 ## Beta features

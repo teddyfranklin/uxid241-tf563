@@ -6,8 +6,8 @@
 -- 2. Seeds the one admin account. Beta has no public registration, so this is
 --    the only way in. The login details are in the README.
 --
--- The value below is a password_hash() (bcrypt, "$2y$...") result made locally with:
---   php -r 'echo password_hash("<password>", PASSWORD_DEFAULT);'
+-- The value below is a password_hash() (bcrypt, "$2y$...") result made locally with
+-- beta/database/hash_password.php (run it from a terminal: php beta/database/hash_password.php).
 -- The plaintext password is never stored in the database.
 -- Re-running this file resets the admin's password back to the README value.
 
