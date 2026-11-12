@@ -1,7 +1,7 @@
 <?php
+declare(strict_types=1);
 // session.php - starts the session with a hardened cookie.
 // Required by login.php, logout.php and guard.php so every page uses the same settings.
-declare(strict_types=1);
 
 // Lecture: "Harden the session cookie" - must run before session_start().
 // 'secure' is only on over HTTPS; XAMPP serves plain http://localhost, where a

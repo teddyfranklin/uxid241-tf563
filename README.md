@@ -4,6 +4,7 @@
 ## What is this project?
 - It is a cookbook site connected to a database. Visitors can browse recipes, search them by title, filter by category, and open a recipe to see its ingredients, steps and tips. An admin can sign in and create, edit and delete recipes. It is built with functional PHP (mysqli) and MySQL.
 - The current milestone is **beta**, in the `beta/` folder. `Alpha/` is kept as the alpha milestone.
+- Repo layout: `beta/` and `Alpha/` are the cookbook project, and `assets/` holds what they share (database config and schema, styles, alpha's search script). `Assignments/` holds the weekly assignments. `Practice/` is personal practice and tutorial follow-alongs, not part of the project, so it isn't held to the project's conventions (e.g. `declare(strict_types=1)`, snake_case).
 
 ## How to run locally
 - Install MAMP (Mac) or XAMPP (Windows)

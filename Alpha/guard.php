@@ -1,9 +1,9 @@
 <?php
+declare(strict_types=1);
 
 // generated with claude based on snippets
 // Require it at the very top of every page in Alpha/admin/:
 //   require __DIR__ . '/../guard.php';
-declare(strict_types=1);
 require __DIR__ . '/session.php';
 
 // Lecture: "Protecting a page: the guard"
