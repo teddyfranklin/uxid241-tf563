@@ -15,7 +15,7 @@ if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
 $count = count($recipes);
 ?>
 <!-- "result" becomes "results" for anything other than 1. -->
-<p class="result-count"><?= $count ?> <?= $count === 1 ? 'result' : 'results' ?></p>
+<p class="result-count"><?= (int) $count ?> <?= $count === 1 ? 'result' : 'results' ?></p>
 
 <div class="card-grid">
   <?php foreach ($recipes as $recipe): ?>
