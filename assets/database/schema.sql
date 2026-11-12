@@ -239,8 +239,11 @@ CREATE TABLE `steps` (
 -- Table structure for users
 -- email is UNIQUE so two accounts can't share it; password_hash holds a
 -- password_hash() result, never plaintext (VARCHAR(255) so it never truncates).
+-- `users` is not in the DROP list above, so accounts survive a re-import.
+-- IF NOT EXISTS lets this file be imported again into a database that already
+-- has users; without it the import stopped here, before any recipe data loaded.
 
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
