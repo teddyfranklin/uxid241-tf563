@@ -1,120 +1,68 @@
 <?php
 declare(strict_types=1);
+// index.php - the public recipe list with title search and the category filter.
+// AI: generated with Claude Code, adapted from the Alpha index.php
+// (moved onto the shared header/footer and functions.php, renamed to snake_case).
 
-// Start the session (same hardened cookie as login.php) so we can tell
-// whether someone is logged in. Must run before any HTML is printed.
+// Start the session so the nav can show whether someone is logged in.
+// Must run before any HTML is printed.
 require __DIR__ . '/session.php';
+require __DIR__ . '/functions.php';
+$conn = require __DIR__ . '/../assets/database/config.php';
 
-// Connect to the database. require_once means search.php (included further down)
-// won't connect a second time.
-require_once __DIR__ . "/../assets/database/config.php";
+$current_user = get_current_user_row($conn);
+$categories = get_categories($conn);
 
-// Lecture: "Reading the current user" - the session only holds the id,
-// so look up the email to show in the welcome message.
-$currentUser = null;
-if (isset($_SESSION['user_id'])) {
-    $result = mysqli_execute_query(
-        $connection,
-        'SELECT email FROM users WHERE id = ?',
-        [$_SESSION['user_id']]
-    );
-    $currentUser = mysqli_fetch_assoc($result);
-}
+// Remember what the user typed/picked so the form still shows it after a refresh.
+// The same values are read by search.php for the live updates.
+$search_text = trim((string) ($_GET['q'] ?? ''));
+$selected_category = (int) ($_GET['category'] ?? 0);
 
-// Gets every category so we can print one radio button per category.
-function getCategories(mysqli $connection): array {
-    $result = mysqli_query($connection, "SELECT id, name FROM categories ORDER BY name");
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
+$recipes = search_recipes($conn, $search_text, $selected_category);
 
-$categories = getCategories($connection);
-
-// Remember what the user typed/picked so the form still shows it after a page refresh.
-$searchText = trim($_GET['q'] ?? '');
-$selectedCategory = (int) ($_GET['category'] ?? 0);
+$page_title = 'Recipes';
+$root = '';
+require __DIR__ . '/partials/header.php';
 ?>
 
+  <!--
+    One form holds the search bar AND the category buttons, so both are sent
+    together. method="get" puts them in the URL (?q=...&category=...). Without
+    JavaScript, pressing Enter reloads index.php with those values; with it,
+    search.js fetches search.php (data-search-url) and swaps the cards in.
+  -->
+  <form id="search-form" class="layout" method="get" action="index.php" data-search-url="search.php">
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe site alpha</title>
+    <input class="search-bar" type="search" name="q" placeholder="Title Search"
+           aria-label="Search recipes by title"
+           value="<?= htmlspecialchars($search_text) ?>">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/styles/main.css">
-</head>
-<body>
-    <!-- Status text: changes depending on whether the user is logged in. -->
-    <?php if ($currentUser !== null): ?>
-        <p class="auth-status">Welcome back, <?= htmlspecialchars($currentUser['email']) ?>! You are logged in.</p>
-    <?php else: ?>
-        <p class="auth-status">You are not logged in. Log in or register to manage recipes.</p>
-    <?php endif; ?>
+    <!-- Radio buttons (not checkboxes): each recipe has only ONE category
+         (recipe_info.category_id), so two at once would never match anything. -->
+    <fieldset class="sidebar">
+      <legend class="sidebar-heading">Category</legend>
 
-    <h1 class="site-title">Recipe site alpha</h1>
+      <!-- "All" has the value 0, which search_recipes() treats as "no filter". -->
+      <label class="category-option">
+        All
+        <input type="radio" name="category" value="0" <?= $selected_category === 0 ? 'checked' : '' ?>>
+      </label>
 
-    <!-- Links also change: Admin + Log out when logged in, otherwise Log in + Register
-         (relative paths, no leading slash). -->
-    <nav class="auth-links">
-        <?php if ($currentUser !== null): ?>
-            <a href="admin/index.php">Admin</a>
-            <a href="logout.php">Log out</a>
-        <?php else: ?>
-            <a class="login-button" href="login.php">Log in</a>
-            <a class="register-button" href="register.php">Register</a>
-        <?php endif; ?>
-    </nav>
+      <?php foreach ($categories as $category): ?>
+        <label class="category-option">
+          <?= htmlspecialchars($category['name']) ?>
+          <input type="radio" name="category" value="<?= (int) $category['id'] ?>"
+            <?= $selected_category === (int) $category['id'] ? 'checked' : '' ?>>
+        </label>
+      <?php endforeach; ?>
+    </fieldset>
 
-    <!--
-        One form holds the search bar AND the category buttons, so both are
-        sent together. method="get" puts them in the URL (?q=...&category=...),
-        which is what search.php reads. data-search-url tells search.js where
-        search.php lives.
-    -->
-    <form id="search-form" class="layout" method="get" data-search-url="../assets/scripts/search.php">
+    <!-- aria-live tells screen readers to announce the new count after each search. -->
+    <section id="results" class="results" aria-live="polite">
+      <?php require __DIR__ . '/partials/results.php'; ?>
+    </section>
+  </form>
 
-        <!-- Search bar -->
-        <input class="search-bar" type="search" name="q" placeholder="Title Search"
-               aria-label="Search recipes by title"
-               value="<?= htmlspecialchars($searchText) ?>">
+  <script src="scripts/search.js"></script>
 
-        <!-- Category sidebar.
-             Radio buttons (not checkboxes): in the database each recipe has only
-             ONE category (recipe_info.category_id), so picking two categories
-             at once would never match anything. -->
-        <fieldset class="sidebar">
-            <legend class="sidebar-heading">Category</legend>
-
-            <!-- "All" has the value 0, which search.php treats as "no filter". -->
-            <label class="category-option">
-                All
-                <input type="radio" name="category" value="0" <?= $selectedCategory === 0 ? 'checked' : '' ?>>
-            </label>
-
-            <?php foreach ($categories as $category): ?>
-                <label class="category-option">
-                    <?= htmlspecialchars($category['name']) ?>
-                    <input type="radio" name="category" value="<?= (int) $category['id'] ?>"
-                        <?= $selectedCategory === (int) $category['id'] ? 'checked' : '' ?>>
-                </label>
-            <?php endforeach; ?>
-        </fieldset>
-
-        <!-- "X results" + the recipe cards.
-             aria-live tells screen readers to announce the new count after each search. -->
-        <section id="results" class="results" aria-live="polite">
-            <?php
-            // Print the cards for the first page load.
-            // After that, search.js replaces everything in this box.
-            include __DIR__ . "/../assets/scripts/search.php";
-            ?>
-        </section>
-    </form>
-
-    <script src="../assets/scripts/search.js"></script>
-</body>
-</html>
+<?php require __DIR__ . '/partials/footer.php'; ?>
