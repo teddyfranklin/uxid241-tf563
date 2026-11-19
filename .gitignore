@@ -1,3 +1,30 @@
 .DS_Store
 
+# Per-machine database credentials (copy config.local.example.php to config.local.php)
 assets/database/config.local.php
+config.local*.php
+!config.local.example.php
+
+# Environment files, keys and certificates
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+id_rsa*
+id_ed25519*
+
+# Database dumps and backups (may contain real user data)
+*.sql.bak
+*.dump
+backup*.sql
+
+# Logs
+*.log
+
+# Uploaded recipe images are user data, not source; keep only the folder and its PHP-blocking rules
+assets/uploads/*
+!assets/uploads/.gitkeep
+!assets/uploads/.htaccess
