@@ -32,7 +32,7 @@
 - **CRUD on recipes**
   - Create: `beta/admin/create.php`. Edit: `beta/admin/edit.php?id=…`. Delete: `beta/admin/delete.php?id=…` (asks to confirm; deletes only on POST).
   - Read: the public list (`beta/index.php`) and a recipe page (`beta/recipe.php?id=…`).
-  - The form covers title, subtitle, category, servings, description, image path and ingredients (one per line). Steps, tools and tips are shown on the recipe page but aren't editable yet.
+  - The form covers title, subtitle, category, servings, description, image (file upload) and ingredients (one per line). Steps, tools and tips are shown on the recipe page but aren't editable yet.
   - Every query lives in `beta/functions.php` and goes through `mysqli_execute_query` (a prepared statement: prepare, bind, execute). No SQL is built from user input.
   - Input is validated on the server (`validate_recipe`) before anything is written. Every value printed to a page goes through `htmlspecialchars`.
   - Create and edit write several tables inside one transaction. Delete is `DELETE FROM recipes WHERE id = ?`, and the foreign keys' `ON DELETE CASCADE` removes that recipe's ingredients, steps, tools and tips.
@@ -43,6 +43,12 @@
 - **Admin guard**
   - Every page in `beta/admin/` first requires `beta/guard.php`, which redirects logged-out visitors to `login.php` and then calls `exit`.
   - The session cookie is `httponly` and `SameSite=Lax` (`beta/session.php`).
+- **Week 8: recipe image upload**
+  - The create and edit forms (`multipart/form-data`) take an optional recipe image. Code: `validate_image_upload`, `make_safe_name` and `save_recipe_image` in `beta/functions.php`; used by `beta/admin/create.php` and `edit.php`.
+  - Validation (an allowlist, never the client's name or MIME type): PHP's error code, a 2 MB size cap, the real type read from the file's bytes with `finfo` (JPEG, PNG or WebP only), `getimagesize` to confirm it parses as an image, and an extension taken from that verified type (so `evil.php.jpg` can't pick its own extension).
+  - The saved name is the original name reduced to lowercase letters, digits and hyphens, with `-1`, `-2` added if it already exists. The file is moved with `move_uploaded_file`.
+  - Stored in `assets/uploads/`, whose `.htaccess` denies PHP-type files and turns the PHP engine off there, so the folder only holds inert data. The path (`uploads/<name>`) is saved in `recipe_info.main_image` through the existing prepared statements and printed with `htmlspecialchars`.
+  - Replacing an image, deleting a recipe, or a failed save deletes the unused upload file.
 - **Chosen feature: Search**
   - The search box on `beta/index.php` finds recipes by title with a prepared statement and a `LIKE ?` parameter (`search_recipes` in `beta/functions.php`).
   - `%` and `_` typed by the user are escaped so they're searched literally.
@@ -62,3 +68,4 @@
   - Every AI-generated file has an `AI:` comment at the top saying so.
   - Claude also tested the site locally: logged-out redirects, login and the vague error, create/edit/delete, and search input such as `'` and `%`.
   - I reviewed the auth and CRUD code against the week 6 and week 7 lectures.
+- Week 8 (image upload): Claude Code wrote the upload validation, storage and form changes following the lecture's six-gate pattern; I chose to keep the images inside `assets/` (with an `.htaccess` guard) so the existing image paths keep working.

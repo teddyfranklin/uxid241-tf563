@@ -20,7 +20,7 @@ if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
 // Every value printed into the form goes through htmlspecialchars, including the
 // values the admin just typed, so nothing they submit can turn into HTML.
 ?>
-  <form class="recipe-form" method="post" action="<?= htmlspecialchars($form_action) ?>" novalidate>
+  <form class="recipe-form" method="post" action="<?= htmlspecialchars($form_action) ?>" enctype="multipart/form-data" novalidate>
     <?php if (isset($errors['form'])): ?>
       <p class="auth-error"><?= htmlspecialchars($errors['form']) ?></p>
     <?php endif; ?>
@@ -69,8 +69,14 @@ if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) {
     </label>
 
     <label>
-      Image path <span class="optional">(optional, e.g. images/my-recipe/dish.jpg)</span>
-      <input type="text" name="main_image" maxlength="255" value="<?= htmlspecialchars((string) $recipe['main_image']) ?>">
+      Recipe image <span class="optional">(optional; JPEG, PNG or WebP, up to 2 MB)</span>
+      <?php if ($recipe['main_image'] !== ''): ?>
+        <img class="form-image-preview" src="../../assets/<?= htmlspecialchars((string) $recipe['main_image']) ?>" alt="Current recipe image" width="160">
+        <span class="optional">Current image: <?= htmlspecialchars((string) $recipe['main_image']) ?>. Choose a file to replace it.</span>
+      <?php endif; ?>
+      <input type="file" name="main_image_file" accept="image/jpeg,image/png,image/webp">
+      <input type="hidden" name="main_image" value="<?= htmlspecialchars((string) $recipe['main_image']) ?>">
+      <?php if (isset($errors['main_image_file'])): ?><span class="field-error"><?= htmlspecialchars($errors['main_image_file']) ?></span><?php endif; ?>
       <?php if (isset($errors['main_image'])): ?><span class="field-error"><?= htmlspecialchars($errors['main_image']) ?></span><?php endif; ?>
     </label>
 

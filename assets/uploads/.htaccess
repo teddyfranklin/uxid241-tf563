@@ -1,0 +1,18 @@
+# Uploaded recipe images live here. This folder must only hold inert data, never runnable code.
+# Disable PHP (and similar) execution in this directory.
+<IfModule mod_authz_core.c>
+  <FilesMatch "\.(?i:php|phtml|php[3-8]|phps|phar|pht)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.(?i:php|phtml|php[3-8]|phps|phar|pht)$">
+    Order Deny,Allow
+    Deny from all
+  </FilesMatch>
+</IfModule>
+# Stronger: no script handlers, no directory listing, no CGI.
+Options -Indexes -ExecCGI
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>

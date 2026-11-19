@@ -179,13 +179,15 @@ function validate_recipe(array $input, array $categories): array {
     $errors['description'] = 'Keep the description under 5000 characters.';
   }
 
-  // Image path: optional. Same shape as the existing data ("images/<folder>/<file>"),
-  // no ".." so it can't point outside assets/images.
+  // Image path: optional. It is no longer typed by the admin: it is either the path already
+  // stored for this recipe (carried in a hidden field) or filled in by the upload code after
+  // the file passes validate_image_upload(). Either way it must have the stored shape
+  // ("images/<folder>/<file>" or "uploads/<file>") with no ".." so it can't escape assets/.
   if ($recipe['main_image'] !== '') {
     if (mb_strlen($recipe['main_image']) > 255
-        || !preg_match('#^images/[A-Za-z0-9._/-]+$#', $recipe['main_image'])
+        || !preg_match('#^(images|uploads)/[A-Za-z0-9._/-]+$#', $recipe['main_image'])
         || str_contains($recipe['main_image'], '..')) {
-      $errors['main_image'] = 'Use a path like images/my-recipe/dish.jpg, or leave it blank.';
+      $errors['main_image'] = 'That image path is not valid. Upload a new image instead.';
     }
   }
 
@@ -250,6 +252,102 @@ function save_ingredients(mysqli $conn, int $recipe_id, array $ingredients): voi
       [$recipe_id, $position, $ingredient]
     );
     $position++;
+  }
+}
+
+// ---------- Recipe image upload (week 8) ----------
+// In $_FILES only tmp_name, size and error come from PHP. 'name' and 'type' come from the
+// visitor's browser, so they are never trusted for the type or the extension.
+
+// Where uploads live: assets/uploads/, served by the web server as a plain static file.
+// That folder has an .htaccess that denies PHP-type files, so it can only hold inert data.
+const UPLOAD_DIR = __DIR__ . '/../assets/uploads';
+const UPLOAD_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+// Allowlist: real MIME type (read from the file's bytes) => the only extension we will save it under.
+const UPLOAD_ALLOWED_TYPES = [
+  'image/jpeg' => 'jpg',
+  'image/png' => 'png',
+  'image/webp' => 'webp',
+];
+
+// Gates 1-4 from the lecture. Returns [$ext, $error]: $ext is the verified extension when the
+// file is acceptable, otherwise $error says why not. Nothing is moved or written here.
+function validate_image_upload(array $file): array {
+  // Gate 1: PHP reports whether the transfer worked. (UPLOAD_ERR_NO_FILE is handled by the caller.)
+  $error_code = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+  if ($error_code === UPLOAD_ERR_INI_SIZE || $error_code === UPLOAD_ERR_FORM_SIZE) {
+    return [null, 'That image is too large. The limit is 2 MB.'];
+  }
+  if ($error_code !== UPLOAD_ERR_OK) {
+    return [null, 'The upload did not finish. Please try again.'];
+  }
+
+  // Gate 2: size limit, checked in code as well as in php.ini.
+  $size = $file['size'] ?? 0;
+  if (!is_int($size) || $size <= 0 || $size > UPLOAD_MAX_BYTES) {
+    return [null, 'That image is too large. The limit is 2 MB.'];
+  }
+
+  // Gate 3: the REAL type, read from the file's magic bytes. $file['type'] is ignored.
+  $tmp_name = $file['tmp_name'] ?? '';
+  if (!is_string($tmp_name) || $tmp_name === '' || !is_uploaded_file($tmp_name)) {
+    return [null, 'The upload could not be verified. Please try again.'];
+  }
+  $finfo = new finfo(FILEINFO_MIME_TYPE);
+  $mime = $finfo->file($tmp_name);
+  if ($mime === false || !array_key_exists($mime, UPLOAD_ALLOWED_TYPES)) {
+    return [null, 'Only JPEG, PNG or WebP images are allowed.'];
+  }
+  // Extra check: the bytes must also parse as an actual image (a text file with a fake header won't).
+  if (@getimagesize($tmp_name) === false) {
+    return [null, 'That file is not a valid image.'];
+  }
+
+  // Gate 4: the extension comes from the verified MIME, never from the client's file name.
+  return [UPLOAD_ALLOWED_TYPES[$mime], null];
+}
+
+// Gate 5: a safe, readable, unique file name. The client's name is hostile input: keep only
+// lowercase letters and digits, collapse everything else (dots, slashes, spaces) to "-".
+function make_safe_name(string $original_name, string $ext, string $folder): string {
+  $base = strtolower(pathinfo($original_name, PATHINFO_FILENAME));
+  $base = preg_replace('/[^a-z0-9]+/', '-', $base);
+  $base = substr(trim($base, '-'), 0, 60);
+  if ($base === '') {
+    $base = 'upload';
+  }
+  $safe_name = $base . '.' . $ext;
+  $counter = 1;
+  while (file_exists($folder . '/' . $safe_name)) {
+    $safe_name = $base . '-' . $counter . '.' . $ext;
+    $counter++;
+  }
+  return $safe_name;
+}
+
+// Gate 6: validate, name and move the file. Returns [$path, $error]. $path is what goes in
+// recipe_info.main_image, relative to assets/ (e.g. "uploads/pasta.jpg").
+function save_recipe_image(array $file): array {
+  [$ext, $error] = validate_image_upload($file);
+  if ($error !== null) {
+    return [null, $error];
+  }
+  if (!is_dir(UPLOAD_DIR)) {
+    return [null, 'The image could not be saved. Please try again.'];
+  }
+  $name = make_safe_name((string) $file['name'], $ext, UPLOAD_DIR);
+  // move_uploaded_file (not rename/copy) re-confirms this file really came from this POST.
+  if (!move_uploaded_file($file['tmp_name'], UPLOAD_DIR . '/' . $name)) {
+    return [null, 'The image could not be saved. Please try again.'];
+  }
+  return ['uploads/' . $name, null];
+}
+
+// Deletes a file we stored in assets/uploads/ (used when an upload is replaced, or the DB write
+// fails after the file was already saved). Only touches "uploads/<plain name>" paths.
+function delete_uploaded_image(?string $path): void {
+  if ($path !== null && preg_match('#^uploads/([a-z0-9-]+\.(jpg|png|webp))$#', $path, $m) === 1) {
+    @unlink(UPLOAD_DIR . '/' . $m[1]);
   }
 }
 
@@ -321,6 +419,11 @@ function update_recipe(mysqli $conn, int $recipe_id, array $recipe): void {
 // ON DELETE CASCADE on its foreign key to recipes.id, so MySQL removes those
 // rows too. Returns false if no recipe had that id.
 function delete_recipe(mysqli $conn, int $recipe_id): bool {
+  $existing = get_recipe($conn, $recipe_id);
   mysqli_execute_query($conn, 'DELETE FROM recipes WHERE id = ?', [$recipe_id]);
-  return mysqli_affected_rows($conn) === 1;
+  $deleted = mysqli_affected_rows($conn) === 1;
+  if ($deleted && $existing !== null) {
+    delete_uploaded_image($existing['main_image']); // only removes files inside assets/uploads/
+  }
+  return $deleted;
 }

@@ -32,14 +32,32 @@ $recipe = $existing; // first visit: fill the form from the database
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   [$recipe, $errors] = validate_recipe($_POST, $categories);
 
+  // Week 8: a chosen image file is validated and stored before the recipe is updated.
+  $new_image = null;
+  $upload = $_FILES['main_image_file'] ?? null;
+  if (count($errors) === 0 && is_array($upload) && ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+    [$new_image, $upload_error] = save_recipe_image($upload);
+    if ($upload_error !== null) {
+      $errors['main_image_file'] = $upload_error;
+    } else {
+      $recipe['main_image'] = $new_image;
+    }
+  }
+
   if (count($errors) === 0) {
     try {
       update_recipe($conn, $recipe_id, $recipe);
+      if ($new_image !== null && $existing['main_image'] !== $new_image) {
+        delete_uploaded_image($existing['main_image']); // the replaced upload is no longer used
+      }
       header('Location: index.php?status=updated&id=' . $recipe_id);
       exit;
     } catch (mysqli_sql_exception $e) {
+      delete_uploaded_image($new_image);
       $errors['form'] = 'The recipe could not be saved. Please try again.';
     }
+  } else {
+    delete_uploaded_image($new_image);
   }
 }
 
